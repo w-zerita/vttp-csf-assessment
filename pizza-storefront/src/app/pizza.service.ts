@@ -3,8 +3,8 @@
 
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { firstValueFrom } from "rxjs";
-import { Order } from "./models";
+import { firstValueFrom, map } from "rxjs";
+import { Order, OrderSummary } from "./models";
 
 @Injectable()
 export class PizzaService {
@@ -15,7 +15,7 @@ export class PizzaService {
   // Add any required parameters or return type
   createOrder(order: Order) { 
     return firstValueFrom(
-      this.http.post<Response>('/api/order', order)
+      this.http.post<any>('/api/order', order)
     )
   }
 
@@ -24,6 +24,12 @@ export class PizzaService {
   getOrders(email: string) {
     return firstValueFrom(
       this.http.get<any>(`/api/order/${email}/all`)
+        .pipe(
+          map(result => {
+              const os = result.orderSummary
+              return os.map((v:any) => v as OrderSummary)
+          })
+      )
     )
   }
 

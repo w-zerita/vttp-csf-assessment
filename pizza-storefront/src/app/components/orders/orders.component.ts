@@ -23,7 +23,8 @@ export class OrdersComponent implements OnInit {
   listOrders() {
     this.pizzaSvc.getOrders(this.email)
       .then(result => {
-        console.log('>>> result: ', result)
+        this.ordersSummary = result
+        console.log('>>> result: ', this.ordersSummary)
       }).catch(err => {
         console.error('>>> error: ', err);
       })

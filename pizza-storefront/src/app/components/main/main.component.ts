@@ -62,6 +62,7 @@ export class MainComponent implements OnInit {
     this.pizzaSvc.createOrder(order)
       .then(result => {
         console.log('>>> result: ', result)
+        this.router.navigate(['/orders', order.email])
       }).catch(err => {
         console.error('>>. error: ', err)
       })

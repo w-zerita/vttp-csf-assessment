@@ -1,7 +1,18 @@
 package vttp2022.assessment.csf.orderbackend.models;
 
+import java.io.StringReader;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
+
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonString;
 
 // IMPORTANT: You can add to this class, but you cannot delete its original content
 
@@ -40,4 +51,58 @@ public class Order {
 
 	public void setComments(String comments) { this.comments = comments; }
 	public String getComments() { return this.comments; }
+
+	public static Order create(String json){
+		JsonReader r = Json.createReader(new StringReader(json));
+		JsonObject o = r.readObject();
+
+		final Order order = new Order();
+		order.setOrderId(o.getInt("orderId"));
+		order.setName(o.getString("name"));
+		order.setEmail(o.getString("email"));
+		order.setSize(o.getInt("size"));
+		order.setSauce(o.getString("sauce"));
+		order.setComments(o.getString("comments"));
+
+		// crust: thick (true), thin (false)
+		if (o.getString("base").equals("thick"))
+			order.setThickCrust(true);
+		else
+			order.setThickCrust(false);
+
+		// get toppings
+		JsonArray toppingsArr = o.getJsonArray("toppings");
+		List<String> toppings = toppingsArr.getValuesAs(JsonString::getString);
+		order.setToppings(toppings);
+
+		return order;
+	}
+
+	public static Order convert(SqlRowSet rs) {
+        Order order = new Order();
+        order.setOrderId(rs.getInt("order_id"));
+		order.setName(rs.getString("name"));
+		order.setEmail(rs.getString("email"));
+		order.setSize(rs.getInt("pizza_size"));
+		order.setThickCrust(rs.getBoolean("thick_crust"));
+		order.setSauce(rs.getString("sauce"));
+		order.setComments(rs.getString("comments"));
+		List<String> toppings = Arrays.asList(
+			rs.getString("toppings").split(","));
+		// order.setToppings(rs.getString("toppings"));
+		order.setToppings(toppings);
+		return order;
+    }
+
+	public JsonObject toJson() {
+		return Json.createObjectBuilder()
+			.add("orderId", orderId)
+			.add("name", name)
+			.add("email", email)
+			.add("size", size)
+			.add("sauce", sauce)
+			// .add("toppings", toppings)
+			.add("comments", comments)
+			.build();
+	}
 }
